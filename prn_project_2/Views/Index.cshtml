@@ -1,0 +1,179 @@
+﻿@using prn_project_2.Models;
+@using System.Globalization;
+@{
+    List<ActivityDetail> activities = (List<ActivityDetail>)ViewBag.Activities;
+    DateTime start = (DateTime)ViewBag.Start;
+    DateTime end = (DateTime)ViewBag.End;
+    var dates = new List<DateTime>();
+    for (var dt = start; dt <= end; dt = dt.AddDays(1))
+    {
+        dates.Add(dt);
+    }
+    TimeSpan t = new TimeSpan(7, 30, 0);
+    int select = (int)ViewBag.Selected;
+    int year = (int)ViewBag.Year;
+    List<Week> weeks = (List<Week>)ViewBag.WeekList;
+}
+
+<!doctype html>
+<html style="font-family: sans-serif; ">
+<head>
+    <title>View schedule</title>
+</head>
+<body>
+    <div style="max-width: 70vw; margin-left: auto; margin-right: auto;">
+        <div class="col-md-8">
+
+            <h1>
+                <span>FPT University Academic Portal</span>
+            </h1>
+        </div>
+        <ol class="breadcrumb" style=" padding: 8px 15px; margin-bottom: 20px; list-style: none; background-color: #f5f5f5; border-radius: 4px;">
+            <li>
+                <span id="ctl00_lblNavigation">&nbsp;<b>View Schedule</b></span>
+            </li>
+        </ol>
+        <div style="font-size: 13px">
+            <h2>
+                Activities for
+                <span id="ctl00_mainContent_lblStudent">ThuyenNAHE160369 (Nguyễn An Thuyên)</span>
+            </h2>
+            <p>
+                <b>Note</b>: These activities do not include extra-curriculum activities, such as
+                club activities ...
+            </p>
+            <p>
+                <b>Chú thích</b>: Các hoạt động trong bảng dưới không bao gồm hoạt động ngoại khóa,
+                ví dụ như hoạt động câu lạc bộ ...
+            </p>
+            <div id="ctl00_mainContent_ghichu">
+                <p>
+                    Các phòng bắt đầu bằng AL thuộc tòa nhà Alpha. VD: AL...<br />
+                    Các phòng bắt đầu bằng BE thuộc tòa nhà Beta. VD: BE,..<br />
+                    Các phòng bắt đầu bằng G thuộc tòa nhà Gamma. VD: G201,...<br />
+                    Các phòng tập bằng đầu bằng R thuộc khu vực sân tập Vovinam.<br />
+                    Các phòng bắt đầu bằng DE thuộc tòa nhà Delta. VD: DE,..<br/>
+                    Little UK (LUK) thuộc tầng 5 tòa nhà Delta
+                </p>
+            </div>
+        </div>
+        <table style="width: 100%; display: block; table-layout: fixed; ">
+            <tr>
+                <th style="border-width: 0px; background-color: #6B90DA; text-align: left;" rowspan="2">
+                    @using (Html.BeginForm("Timetable", "Default", FormMethod.Post))
+                    {
+                        <span class="auto-style1"><strong>Year</strong></span>
+                        <select name="year" id="yearList" onchange="form.submit()">
+                            <option value="2018">2018</option>
+                            <option value="2019">2019</option>
+                            <option value="2020">2020</option>
+                            <option value="2021">2021</option>
+                            <option value="2022">2022</option>
+
+                        </select>
+                        <br />
+                        <span>WEEK</span>
+                        <select name="week" id="weekList" onchange="form.submit()">
+                            @foreach (Week w in weeks)
+                            {
+                                <option value=@w.WeekN>@w.WeekS</option>
+                            }
+                        </select>
+                    }
+                </th>
+                <th style="border-width: 0px; background-color: #6B90DA">MON</th>
+                <th style="border-width: 0px; background-color: #6B90DA">TUE</th>
+                <th style="border-width: 0px; background-color: #6B90DA">WED</th>
+                <th style="border-width: 0px; background-color: #6B90DA">THU</th>
+                <th style="border-width: 0px; background-color: #6B90DA">FRI</th>
+                <th style="border-width: 0px; background-color: #6B90DA">SAT</th>
+                <th style="border-width: 0px; background-color: #6B90DA">SUN</th>
+            </tr>
+            <tr>
+                @foreach (DateTime date in dates)
+                {
+                    <td style="border-width: 0px; background-color: #6B90DA">@date.ToString("dd/MM")</td>
+                }
+            </tr>
+            @for (int i = 1; i <= 6; i++)
+            {
+                <tr>
+                    <td>Slot @i</td>
+                    @foreach (DateTime date in dates)
+                    {
+                        int blank = 0;
+                        @foreach (ActivityDetail a in activities)
+                        {
+                            if (a.Slot == i && a.Time == date)
+                            {
+                                <td style="border-bottom: 1px solid #f0f0f0;">
+                                    @Html.ActionLink(Convert.ToString(a.SubjectId), "DetailPage", "Default", new { aid = a.ActivityId }) <br />
+                                    at @a.Classroom<br />
+                                    (<font color="red">Not yet</font>)<br />
+                                    <span style="background-color: #5cb85c; display: inline; padding: .2em .6em .3em; font-size: 75%; font-weight: 700; line-height: 1; color: #fff; text-align: center; white-space: nowrap; vertical-align: baseline; border-radius: .25em; ">(@t.Hours:@t.ToString("mm")  -@t.Add(new TimeSpan(1, 30, 0)).Hours:@t.Add(new TimeSpan(1, 30, 0)).ToString("mm"))</span>
+                                </td>
+                                blank++;
+                            }
+                        }
+                        if (blank == 0)
+                        {
+                            <td style="border-bottom: 1px solid #f0f0f0;">-</td>
+                        }
+                    }
+                </tr>
+                @if (i == 4)
+                {
+                    t += new TimeSpan(2, 0, 0);
+                }
+                else
+                {
+                    t += new TimeSpan(1, 40, 0);
+                }
+            }
+        </table>
+        <p>
+            <b>More note / Chú thích thêm</b>:
+        </p>
+        <div id="ctl00_mainContent_divfoot"><ul>
+            <li>(<font color='green'>attended</font>): ThuyenNAHE160369 had attended this activity / Nguyễn An Thuyên đã tham gia hoạt động này</li>
+                <li>(<font color='red'>absent</font>): ThuyenNAHE160369 had NOT attended this activity / Nguyễn An Thuyên đã vắng mặt buổi này</li>
+                <li>(-): no data was given / chưa có dữ liệu</li>
+            </ul>
+        </div>
+        <p>
+        </p>
+
+        <tr style="border-bottom: 0 none">
+            <td>
+                <br />
+                <table width="100%" style="border: 1px solid transparent;" id="cssTable">
+                    <tr>
+                        <td>
+                            <div id="ctl00_divSupport">
+                                <br />
+                                <b>Mọi góp ý, thắc mắc xin liên hệ: </b><span style="color: rgb(34, 34, 34); font-family: arial, sans-serif; font-size: 13.333333969116211px; font-style: normal; font-variant: normal; font-weight: normal; letter-spacing: normal; line-height: normal; orphans: auto; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: auto; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); display: inline !important; float: none;">Phòng dịch vụ sinh viên</span>: Email: <a href="mailto:dichvusinhvien@fe.edu.vn">dichvusinhvien@fe.edu.vn</a>.
+                                Điện thoại: <span class="style1"
+                                                  style="color: rgb(34, 34, 34); font-family: arial, sans-serif; font-size: 13.333333969116211px; font-style: normal; font-variant: normal; letter-spacing: normal; line-height: normal; orphans: auto; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: auto; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); display: inline !important; float: none;">(024)7308.13.13 </span>
+                                <br />
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <p style="text-align: center">
+                                © Powered by <a href="http://fpt.edu.vn" target="_blank">FPT University</a>&nbsp;|&nbsp;
+                                <a href="http://cms.fpt.edu.vn/" target="_blank">CMS</a>&nbsp;|&nbsp; <a href="http://library.fpt.edu.vn" target="_blank">library</a>&nbsp;|&nbsp; <a href="http://library.books24x7.com" target="_blank">books24x7</a>
+                                <span id="ctl00_lblHelpdesk"></span>
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </div>
+    <script>
+        document.getElementById('weekList').value = @select;
+        document.getElementById('yearList').value = @year;
+    </script>
+</body>
+</html>
